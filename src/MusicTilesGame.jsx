@@ -12,35 +12,29 @@ const MusicTilesGame = () => {
   const [isGameFinished, setIsGameFinished] = useState(false);
 
   // Функция для динамического изменения конфигурации игры в зависимости от ширины экрана
-  const getGameConfig = (screenWidth) => {
-    let width, height, tileWidth, tileHeight, tileLines;
+  const getGameConfig = (screenWidth, screenHeight) => {
+    let tileWidth, tileHeight, tileLines;
 
     if (screenWidth <= 480) {
       // Мобильные устройства
-      width = 300;
-      height = 300;
-      tileWidth = 50;
-      tileHeight = 90;
-      tileLines = [width / 4, width / 2, (3 * width) / 4]; // Линии по ширине экрана
+      tileWidth = 75;
+      tileHeight = 150;
+      tileLines = [screenWidth / 4, screenWidth / 2, (3 * screenWidth) / 4]; // Линии по ширине экрана
     } else if (screenWidth <= 768) {
       // Планшеты
-      width = 450;
-      height = 450;
-      tileWidth = 75;
-      tileHeight = 135;
-      tileLines = [width / 4, width / 2, (3 * width) / 4];
+      tileWidth = 100;
+      tileHeight = 200;
+      tileLines = [screenWidth / 4, screenWidth / 2, (3 * screenWidth) / 4];
     } else {
       // Десктопы
-      width = 600;
-      height = 600;
-      tileWidth = 100;
-      tileHeight = 180;
-      tileLines = [width / 4, width / 2, (3 * width) / 4];
+      tileWidth = 120;
+      tileHeight = 240;
+      tileLines = [screenWidth / 4, screenWidth / 2, (3 * screenWidth) / 4];
     }
 
     return {
-      width,
-      height,
+      width: screenWidth,
+      height: screenHeight,
       tileWidth,
       tileHeight,
       tileLines, // Линии для размещения плиток
@@ -102,7 +96,8 @@ const MusicTilesGame = () => {
 
     // Получение текущей конфигурации игры на основе ширины экрана
     const { width, height, tileWidth, tileHeight, tileLines } = getGameConfig(
-      window.innerWidth
+      window.innerWidth,
+      window.innerHeight
     );
 
     const config = {
@@ -219,7 +214,7 @@ const MusicTilesGame = () => {
   };
 
   return (
-    <div className="game-parent">
+    <div className="game-parent" style={{ width: "100vw", height: "100vh" }}>
       {!isGameStarted && !isGameFinished && (
         <div className="start-button">
           <button onClick={handleStartGame}>Начать игру</button>
