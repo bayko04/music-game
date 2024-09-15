@@ -11,6 +11,42 @@ const MusicTilesGame = () => {
   const [isGameStarted, setIsGameStarted] = useState(false);
   const [isGameFinished, setIsGameFinished] = useState(false);
 
+  // Функция для динамического изменения конфигурации игры в зависимости от ширины экрана
+  const getGameConfig = (screenWidth) => {
+    let width, height, tileWidth, tileHeight, tileLines;
+
+    if (screenWidth <= 480) {
+      // Мобильные устройства
+      width = 300;
+      height = 300;
+      tileWidth = 50;
+      tileHeight = 90;
+      tileLines = [width / 4, width / 2, (3 * width) / 4]; // Линии по ширине экрана
+    } else if (screenWidth <= 768) {
+      // Планшеты
+      width = 450;
+      height = 450;
+      tileWidth = 75;
+      tileHeight = 135;
+      tileLines = [width / 4, width / 2, (3 * width) / 4];
+    } else {
+      // Десктопы
+      width = 600;
+      height = 600;
+      tileWidth = 100;
+      tileHeight = 180;
+      tileLines = [width / 4, width / 2, (3 * width) / 4];
+    }
+
+    return {
+      width,
+      height,
+      tileWidth,
+      tileHeight,
+      tileLines, // Линии для размещения плиток
+    };
+  };
+
   useEffect(() => {
     if (!isGameStarted) return;
 
@@ -31,9 +67,8 @@ const MusicTilesGame = () => {
       { note: "E2", instrument: "kick", time: "1:1" },
     ];
 
-    const tileLines = [100, 300, 500];
     let tiles;
-    let tileSpeed = 7;
+    let tileSpeed = 10;
     let activeTiles = 0;
     const maxTiles = 4;
 
@@ -65,10 +100,15 @@ const MusicTilesGame = () => {
     const tempo = Tone.Transport.bpm.value;
     const beatInterval = (60 / tempo) * 1000;
 
+    // Получение текущей конфигурации игры на основе ширины экрана
+    const { width, height, tileWidth, tileHeight, tileLines } = getGameConfig(
+      window.innerWidth
+    );
+
     const config = {
       type: Phaser.AUTO,
-      width: 600,
-      height: 600,
+      width: width,
+      height: height,
       physics: {
         default: "arcade",
         arcade: {
@@ -96,11 +136,11 @@ const MusicTilesGame = () => {
       const lines = this.add.graphics();
       lines.lineStyle(2, 0xffffff);
 
-      lines.beginPath();
-      lines.moveTo(200, 0);
-      lines.lineTo(200, 600);
-      lines.moveTo(400, 0);
-      lines.lineTo(400, 600);
+      // Динамическое создание линий на основе ширины экрана
+      tileLines.forEach((linePos) => {
+        lines.moveTo(linePos, 0);
+        lines.lineTo(linePos, height);
+      });
       lines.strokePath();
 
       tiles = this.physics.add.group();
@@ -124,6 +164,7 @@ const MusicTilesGame = () => {
     function spawnTile(noteObj) {
       if (activeTiles >= maxTiles) return;
 
+      // Динамическое размещение плиток на основе ширины экрана
       const x = Phaser.Math.RND.pick(tileLines);
       const tile = tiles.create(x, -50, "tile");
 
@@ -138,7 +179,7 @@ const MusicTilesGame = () => {
       });
 
       tile.setDepth(1);
-      tile.setDisplaySize(100, 180);
+      tile.setDisplaySize(tileWidth, tileHeight); // Установка динамического размера плиток
 
       activeTiles++;
     }
@@ -148,7 +189,7 @@ const MusicTilesGame = () => {
         if (tile) {
           tile.y += tileSpeed;
 
-          if (tile.y > 600) {
+          if (tile.y > height) {
             setScore((prevScore) => prevScore - 5);
             tile.destroy();
             activeTiles--;
