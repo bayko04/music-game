@@ -19,17 +19,17 @@ const MusicTilesGame = () => {
       // Мобильные устройства
       tileWidth = 100;
       tileHeight = 200;
-      tileLines = [screenWidth / 4, screenWidth / 2, (3 * screenWidth) / 4]; // Три равномерные линии
+      tileLines = [screenWidth * 0.2, screenWidth * 0.5, screenWidth * 0.8]; // Увеличенные отступы
     } else if (screenWidth <= 768) {
       // Планшеты
       tileWidth = 150;
       tileHeight = 300;
-      tileLines = [screenWidth / 4, screenWidth / 2, (3 * screenWidth) / 4];
+      tileLines = [screenWidth * 0.2, screenWidth * 0.5, screenWidth * 0.8];
     } else {
       // Десктопы
       tileWidth = 200;
       tileHeight = 400;
-      tileLines = [screenWidth / 4, screenWidth / 2, (3 * screenWidth) / 4];
+      tileLines = [screenWidth * 0.3, screenWidth * 0.5, screenWidth * 0.7];
     }
 
     return {
