@@ -1,0 +1,30 @@
+/* Базовый стиль для плиток */
+.tile-style {
+  width: 100px;
+  height: 100px;
+  background-color: lightblue; /* Цвет плитки */
+  border-radius: 10px; /* Скруглённые углы */
+  border: 2px solid blue; /* Обводка */
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2); /* Тень */
+}
+
+/* Разные цвета для разных нот */
+.tile-style[data-note="E4"] {
+  background-color: red;
+}
+
+.tile-style[data-note="G4"] {
+  background-color: green;
+}
+
+.tile-style[data-note="A4"] {
+  background-color: yellow;
+}
+
+.tile-style[data-note="D4"] {
+  background-color: blue;
+}
+
+.tile-style[data-note="C4"] {
+  background-color: purple;
+}
