@@ -17,18 +17,18 @@ const MusicTilesGame = () => {
 
     if (screenWidth <= 480) {
       // Мобильные устройства
-      tileWidth = 75;
-      tileHeight = 150;
-      tileLines = [screenWidth / 4, screenWidth / 2, (3 * screenWidth) / 4]; // Линии по ширине экрана
-    } else if (screenWidth <= 768) {
-      // Планшеты
       tileWidth = 100;
       tileHeight = 200;
+      tileLines = [screenWidth / 4, screenWidth / 2, (3 * screenWidth) / 4]; // Три равномерные линии
+    } else if (screenWidth <= 768) {
+      // Планшеты
+      tileWidth = 150;
+      tileHeight = 300;
       tileLines = [screenWidth / 4, screenWidth / 2, (3 * screenWidth) / 4];
     } else {
       // Десктопы
-      tileWidth = 120;
-      tileHeight = 240;
+      tileWidth = 200;
+      tileHeight = 400;
       tileLines = [screenWidth / 4, screenWidth / 2, (3 * screenWidth) / 4];
     }
 
@@ -214,7 +214,7 @@ const MusicTilesGame = () => {
   };
 
   return (
-    <div className="game-parent" style={{ width: "100vw", height: "100vh" }}>
+    <div className="game-parent">
       {!isGameStarted && !isGameFinished && (
         <div className="start-button">
           <button onClick={handleStartGame}>Начать игру</button>
