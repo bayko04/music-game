@@ -245,7 +245,6 @@ const MusicTilesGame = () => {
       {isGameStarted && !isGameFinished && (
         <>
           <div id="game-container"></div>
-          <div className="bg-blur"></div>
           <h1 className="game-points">
             <span>{score}</span>
             <br />
