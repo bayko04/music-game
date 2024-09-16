@@ -45,8 +45,8 @@ const MusicTilesGame = () => {
     const bass = new Tone.MonoSynth().toDestination();
     const snare = new Tone.NoiseSynth().toDestination();
 
-    const tileSound = new Tone.Player(tileSoundMp).toDestination();
-    tileSound.volume.value = -10;
+    // const tileSound = new Tone.Player(tileSoundMp).toDestination();
+    // tileSound.volume.value = -10;
 
     const melody = [
       { note: "E4", instrument: "synth", time: 0 },
@@ -74,17 +74,20 @@ const MusicTilesGame = () => {
       if (gameRef.current) {
         gameRef.current.destroy(true);
       }
-      backgroundMusic.stop();
-      Tone.Transport.stop();
+      backgroundMusic.stop(); // Останавливаем музыку
+      Tone.Transport.stop(); // Останавливаем транспорт
     };
 
     Tone.loaded().then(() => {
       Tone.Transport.start();
       backgroundMusic.start();
 
+      // Останавливаем игру и музыку через 60 секунд
       setTimeout(() => {
-        stopGame();
-      }, 60000);
+        backgroundMusic.stop(); // Останавливаем музыку
+        Tone.Transport.stop(); // Останавливаем транспорт
+        stopGame(); // Завершаем игру
+      }, 60000); // 60 секунд
     });
 
     const tempo = Tone.Transport.bpm.value;
@@ -134,19 +137,18 @@ const MusicTilesGame = () => {
 
       tiles = this.physics.add.group();
 
-      // Создание зон для нажатий немного выше для синхронизации с музыкой
+      // Создание зон для нажатий
       hitZones = this.add.group();
       tileLines.forEach((xPos) => {
         const zone = this.add.rectangle(
           xPos,
-          height - tileHeight - 50, // Поднимаем зоны нажатий выше
+          height - tileHeight - 50,
           tileWidth - 10,
           tileHeight - 50,
           0xffffff,
           0.1
         );
         hitZones.add(zone);
-        // zone.setStrokeStyle(2, 0xffffff); // Добавляем рамку
       });
 
       this.time.addEvent({
@@ -185,7 +187,7 @@ const MusicTilesGame = () => {
         });
 
         if (clickedZone) {
-          playTileSound();
+          // playTileSound();
           setScore((prevScore) => prevScore + 10);
           tile.destroy();
           activeTiles--;
@@ -201,7 +203,6 @@ const MusicTilesGame = () => {
     function update() {
       tiles.children.iterate(function (tile) {
         if (tile) {
-          // Изменяем скорость плиток для лучшего попадания в ритм
           tile.y += tileSpeed;
 
           if (tile.y > height) {
@@ -212,13 +213,12 @@ const MusicTilesGame = () => {
         }
       });
 
-      // Можно корректировать скорость плиток в зависимости от прогресса
       tileSpeed += 0.001; // Постепенное увеличение скорости
     }
 
-    function playTileSound() {
-      tileSound.start();
-    }
+    // function playTileSound() {
+    //   tileSound.start();
+    // }
 
     return () => {
       if (gameRef.current) {

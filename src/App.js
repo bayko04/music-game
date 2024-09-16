@@ -1,6 +1,5 @@
 import React from "react";
 import "./App.css";
-import MusicGame from "./MusicGame";
 import MusicTilesGame from "./MusicTilesGame";
 
 function App() {
