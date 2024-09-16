@@ -11,22 +11,18 @@ const MusicTilesGame = () => {
   const [isGameStarted, setIsGameStarted] = useState(false);
   const [isGameFinished, setIsGameFinished] = useState(false);
 
-  // Функция для динамического изменения конфигурации игры в зависимости от ширины экрана
   const getGameConfig = (screenWidth, screenHeight) => {
     let tileWidth, tileHeight, tileLines;
 
     if (screenWidth <= 480) {
-      // Мобильные устройства
       tileWidth = 100;
       tileHeight = 200;
-      tileLines = [screenWidth * 0.2, screenWidth * 0.5, screenWidth * 0.8]; // Увеличенные отступы
+      tileLines = [screenWidth * 0.2, screenWidth * 0.5, screenWidth * 0.8];
     } else if (screenWidth <= 768) {
-      // Планшеты
       tileWidth = 150;
       tileHeight = 300;
       tileLines = [screenWidth * 0.2, screenWidth * 0.5, screenWidth * 0.8];
     } else {
-      // Десктопы
       tileWidth = 200;
       tileHeight = 400;
       tileLines = [screenWidth * 0.3, screenWidth * 0.5, screenWidth * 0.7];
@@ -37,7 +33,7 @@ const MusicTilesGame = () => {
       height: screenHeight,
       tileWidth,
       tileHeight,
-      tileLines, // Линии для размещения плиток
+      tileLines,
     };
   };
 
@@ -62,7 +58,8 @@ const MusicTilesGame = () => {
     ];
 
     let tiles;
-    let tileSpeed = 10;
+    let hitZones;
+    let tileSpeed = 16;
     let activeTiles = 0;
     const maxTiles = 4;
 
@@ -73,9 +70,9 @@ const MusicTilesGame = () => {
     }).toDestination();
 
     const stopGame = () => {
-      setIsGameFinished(true); // Игра окончена
+      setIsGameFinished(true);
       if (gameRef.current) {
-        gameRef.current.destroy(true); // Очищаем игру
+        gameRef.current.destroy(true);
       }
       backgroundMusic.stop();
       Tone.Transport.stop();
@@ -85,16 +82,14 @@ const MusicTilesGame = () => {
       Tone.Transport.start();
       backgroundMusic.start();
 
-      // Таймер на 60 секунд для остановки игры
       setTimeout(() => {
-        stopGame(); // Останавливаем игру и музыку через 1 минуту
+        stopGame();
       }, 60000);
     });
 
     const tempo = Tone.Transport.bpm.value;
     const beatInterval = (60 / tempo) * 1000;
 
-    // Получение текущей конфигурации игры на основе ширины экрана
     const { width, height, tileWidth, tileHeight, tileLines } = getGameConfig(
       window.innerWidth,
       window.innerHeight
@@ -131,7 +126,6 @@ const MusicTilesGame = () => {
       const lines = this.add.graphics();
       lines.lineStyle(2, 0xffffff);
 
-      // Динамическое создание линий на основе ширины экрана
       tileLines.forEach((linePos) => {
         lines.moveTo(linePos, 0);
         lines.lineTo(linePos, height);
@@ -139,6 +133,22 @@ const MusicTilesGame = () => {
       lines.strokePath();
 
       tiles = this.physics.add.group();
+
+      // Создание зон для нажатий с размерами, как у плиток
+      hitZones = this.add.group(); // Инициализируем hitZones
+      tileLines.forEach((xPos) => {
+        // Зоны для нажатий с размерами плиток
+        const zone = this.add.rectangle(
+          xPos,
+          height - height / 3, // Положение по Y соответствует центру зоны
+          tileWidth - 10,
+          tileHeight - 50, // Зона имеет размер, как и плитка
+          0xffffff,
+          0.1
+        );
+        hitZones.add(zone);
+        zone.setStrokeStyle(2, 0xffffff); // Добавляем рамку
+      });
 
       this.time.addEvent({
         delay: beatInterval,
@@ -159,22 +169,32 @@ const MusicTilesGame = () => {
     function spawnTile(noteObj) {
       if (activeTiles >= maxTiles) return;
 
-      // Динамическое размещение плиток на основе ширины экрана
       const x = Phaser.Math.RND.pick(tileLines);
       const tile = tiles.create(x, -50, "tile");
 
       tile.setInteractive();
       tile.note = noteObj.note;
       tile.instrument = noteObj.instrument;
-      tile.on("pointerdown", () => {
-        playTileSound();
-        setScore((prevScore) => prevScore + 10);
-        tile.destroy();
-        activeTiles--;
+      tile.on("pointerdown", (pointer) => {
+        const clickedZone = hitZones.getChildren().find((zone) => {
+          return (
+            pointer.x >= zone.x - zone.width / 2 &&
+            pointer.x <= zone.x + zone.width / 2 &&
+            pointer.y >= zone.y - zone.height / 2 &&
+            pointer.y <= zone.y + zone.height / 2
+          );
+        });
+
+        if (clickedZone) {
+          playTileSound();
+          setScore((prevScore) => prevScore + 10);
+          tile.destroy();
+          activeTiles--;
+        }
       });
 
       tile.setDepth(1);
-      tile.setDisplaySize(tileWidth, tileHeight); // Установка динамического размера плиток
+      tile.setDisplaySize(tileWidth, tileHeight);
 
       activeTiles++;
     }
@@ -185,7 +205,9 @@ const MusicTilesGame = () => {
           tile.y += tileSpeed;
 
           if (tile.y > height) {
-            setScore((prevScore) => prevScore - 5);
+            setScore((prevScore) => {
+              return prevScore - 5 > 0 ? prevScore - 5 : 0;
+            });
             tile.destroy();
             activeTiles--;
           }
@@ -224,6 +246,7 @@ const MusicTilesGame = () => {
       {isGameStarted && !isGameFinished && (
         <>
           <div id="game-container"></div>
+          <div className="bg-blur"></div>
           <h1 className="game-points">
             <span>{score}</span>
             <br />
@@ -235,7 +258,7 @@ const MusicTilesGame = () => {
       {isGameFinished && (
         <div className="end-screen">
           <h3>Игра окончена!</h3>
-          <button onClick={() => setIsGameStarted(false)}>Вернуться</button>
+          <a onClick={() => setIsGameStarted(false)}>Вернуться</a>
         </div>
       )}
     </div>

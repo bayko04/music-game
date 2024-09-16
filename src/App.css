@@ -6,7 +6,18 @@
 .game-parent {
   /* min-height: 100vh;
   width: 100%; */
+  /* margin: 100px 0 0 0; */
+  /* position: relative; */
 }
+/* 
+.bg-blur {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  background: #212121;
+  filter: blur(30px);
+  z-index: 5;
+} */
 
 body {
   background: #212121;
@@ -18,6 +29,8 @@ body {
   justify-content: center;
   align-items: center;
   margin: 0 auto;
+  position: relative;
+  z-index: 1; /* Игровой процесс */
 }
 
 .tile-style {
@@ -47,9 +60,14 @@ body {
 }
 
 .game-points {
-  color: #fff;
+  /* position: absolute;
+  top: 10px; 
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 24px; */
+  color: white;
+  z-index: 10; /* Очки поверх игры */
 }
-
 .start-button {
   position: absolute;
   top: 50%;
@@ -88,7 +106,8 @@ body {
   font-size: 30px;
 }
 
-.end-screen button {
+.end-screen a {
+  cursor: pointer;
   padding: 10px;
   background: transparent;
   border: 1px solid #fff;
@@ -99,7 +118,7 @@ body {
   transition: all 0.3s ease;
 }
 
-.end-screen button:hover {
+.end-screen a:hover {
   background: #fff;
   color: #000;
 }
