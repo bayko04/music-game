@@ -59,7 +59,7 @@ const MusicTilesGame = () => {
 
     let tiles;
     let hitZones;
-    let tileSpeed = 16;
+    let tileSpeed = 12;
     let activeTiles = 0;
     const maxTiles = 4;
 
@@ -134,20 +134,19 @@ const MusicTilesGame = () => {
 
       tiles = this.physics.add.group();
 
-      // Создание зон для нажатий с размерами, как у плиток
-      hitZones = this.add.group(); // Инициализируем hitZones
+      // Создание зон для нажатий немного выше для синхронизации с музыкой
+      hitZones = this.add.group();
       tileLines.forEach((xPos) => {
-        // Зоны для нажатий с размерами плиток
         const zone = this.add.rectangle(
           xPos,
-          height - height / 3, // Положение по Y соответствует центру зоны
+          height - tileHeight - 50, // Поднимаем зоны нажатий выше
           tileWidth - 10,
-          tileHeight - 50, // Зона имеет размер, как и плитка
+          tileHeight - 50,
           0xffffff,
           0.1
         );
         hitZones.add(zone);
-        zone.setStrokeStyle(2, 0xffffff); // Добавляем рамку
+        // zone.setStrokeStyle(2, 0xffffff); // Добавляем рамку
       });
 
       this.time.addEvent({
@@ -202,19 +201,19 @@ const MusicTilesGame = () => {
     function update() {
       tiles.children.iterate(function (tile) {
         if (tile) {
+          // Изменяем скорость плиток для лучшего попадания в ритм
           tile.y += tileSpeed;
 
           if (tile.y > height) {
-            setScore((prevScore) => {
-              return prevScore - 5 > 0 ? prevScore - 5 : 0;
-            });
+            setScore((prevScore) => (prevScore - 5 > 0 ? prevScore - 5 : 0));
             tile.destroy();
             activeTiles--;
           }
         }
       });
 
-      tileSpeed += 0.001;
+      // Можно корректировать скорость плиток в зависимости от прогресса
+      tileSpeed += 0.001; // Постепенное увеличение скорости
     }
 
     function playTileSound() {
