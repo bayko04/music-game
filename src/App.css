@@ -2,6 +2,11 @@ body {
   background: #212121;
 }
 
+.App {
+  min-height: 100vh;
+  width: 100%;
+}
+
 .game-parent {
 }
 
@@ -95,4 +100,33 @@ body {
 .end-screen a:hover {
   background: #fff;
   color: #000;
+}
+
+.score-display {
+  position: fixed;
+  top: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: #ffffffc4;
+  font-size: 43px;
+  line-height: 25px;
+  text-align: center;
+}
+
+.score-display > span {
+  font-size: 18px;
+}
+
+.song-title {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  color: #ffffffc4;
+  font-size: 18px;
+  text-align: center;
+}
+
+.song-title span {
+  font-size: 14px;
 }
