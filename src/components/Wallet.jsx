@@ -7,7 +7,7 @@ import { useTonAddress } from "@tonconnect/ui-react";
 
 export const Wallet = () => {
   const wallet = useTonWallet();
-  const [balance, setBalance] = useState(null);
+  const [balance, setBalance] = useState([]);
   const [userFriendlyAddress, rawAddress] = useAddress();
 
   useEffect(() => {
