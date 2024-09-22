@@ -1,6 +1,8 @@
 import { useTonWallet } from "@tonconnect/ui-react";
 import { TonConnectButton } from "@tonconnect/ui-react";
 import { useEffect } from "react";
+import { Address } from "./Adress";
+import { ModalControl } from "./ModalControl";
 
 export const Wallet = () => {
   const wallet = useTonWallet();
@@ -19,7 +21,9 @@ export const Wallet = () => {
           <span>Кошелек не подключен</span>
         )}
       </div>
-      s )
+
+      <Address />
+      <ModalControl />
     </>
   );
 };
