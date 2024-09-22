@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Address, useAddress } from "../hooks/useAdress";
 import { ModalControl } from "./ModalControl";
 import { useTonAddress } from "@tonconnect/ui-react";
+import SendTransaction from "./SendTransaction";
 
 export const Wallet = () => {
   const wallet = useTonWallet();
@@ -43,6 +44,7 @@ export const Wallet = () => {
           <span>Кошелек не подключен</span>
         )}
       </div>
+      {wallet && <SendTransaction />}
     </>
   );
 };
