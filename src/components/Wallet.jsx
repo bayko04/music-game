@@ -1,18 +1,16 @@
 import { useTonWallet } from "@tonconnect/ui-react";
 import { TonConnectButton } from "@tonconnect/ui-react";
 import { useEffect, useState } from "react";
-import { Address } from "./Adress";
+import { Address, useAddress } from "../hooks/useAdress";
 import { ModalControl } from "./ModalControl";
 import { useTonAddress } from "@tonconnect/ui-react";
 
 export const Wallet = () => {
   const wallet = useTonWallet();
   const [balance, setBalance] = useState(null);
-  const userFriendlyAddress = useTonAddress();
-  const rawAddress = useTonAddress(false);
+  const [userFriendlyAddress, rawAddress] = useAddress();
 
   useEffect(() => {
-    // Функция для получения баланса
     const fetchBalance = async () => {
       try {
         const adress = await fetch(
@@ -31,7 +29,7 @@ export const Wallet = () => {
 
   return (
     <>
-      <h1>Баланс кошелька {balance}</h1>
+      {userFriendlyAddress && <h1>Баланс кошелька {balance}</h1>}
       <TonConnectButton />
       <div>
         {wallet ? (
@@ -43,9 +41,6 @@ export const Wallet = () => {
           <span>Кошелек не подключен</span>
         )}
       </div>
-
-      <Address />
-      {/* <ModalControl /> */}
     </>
   );
 };
