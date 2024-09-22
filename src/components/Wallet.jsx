@@ -31,7 +31,7 @@ export const Wallet = () => {
 
   return (
     <>
-      {userFriendlyAddress && <h1>Баланс кошелька {balance}</h1>}
+      {userFriendlyAddress && <h1>Баланс кошелька {balance.result}</h1>}
       <TonConnectButton />
       <div>
         {wallet ? (
