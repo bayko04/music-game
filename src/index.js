@@ -1,3 +1,5 @@
+// Обеспечиваем наличие Buffer в глобальной области видимости
+
 import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App";

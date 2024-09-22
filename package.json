@@ -7,12 +7,15 @@
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
     "@tonconnect/ui-react": "^2.0.9",
+    "buffer": "^6.0.3",
+    "node-libs-browser": "^2.2.1",
     "phaser": "^3.85.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.26.2",
     "react-scripts": "5.0.1",
     "tone": "^15.0.4",
+    "tonweb": "^0.0.66",
     "web-vitals": "^2.1.4"
   },
   "scripts": {
