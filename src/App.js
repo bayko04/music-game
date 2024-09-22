@@ -10,7 +10,9 @@ import manifest from "./manifest.json";
 function App() {
   return (
     <BrowserRouter>
-      <TonConnectUIProvider manifestUrl={manifest}>
+      <TonConnectUIProvider
+        manifestUrl={`https://music-game-six.vercel.app/tonconnect-manifest.json`}
+      >
         {/* Ваши компоненты приложения */}
         <div className="App">
           <Routes>
