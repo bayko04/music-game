@@ -5,7 +5,6 @@ import { BrowserRouter, Routes, Route, Outlet } from "react-router-dom";
 import { Wallet } from "./components/Wallet";
 import { WalletBalance } from "./components/WalletBalance";
 import { TonConnectUIProvider } from "@tonconnect/ui-react";
-import manifest from "./manifest.json";
 
 function App() {
   return (
