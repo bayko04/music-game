@@ -10,24 +10,24 @@ export const Wallet = () => {
   const [balance, setBalance] = useState(null);
   const [userFriendlyAddress, rawAddress] = useAddress();
 
-  // useEffect(() => {
-  //   const fetchBalance = async () => {
-  //     try {
-  //       const adress = await fetch(
-  //         `https://toncenter.com/api/v2/getAddressBalance?address=${userFriendlyAddress}`
-  //       );
-  //       const balance = await adress.json();
-  //       setBalance(balance);
-  //     } catch (error) {
-  //       console.error("Ошибка получения баланса:", error);
-  //       setBalance(0);
-  //     }
-  //   };
+  useEffect(() => {
+    if (userFriendlyAddress) {
+      const fetchBalance = async () => {
+        try {
+          const adress = await fetch(
+            `https://toncenter.com/api/v2/getAddressBalance?address=${userFriendlyAddress}`
+          );
+          const balance = await adress.json();
+          setBalance(balance);
+        } catch (error) {
+          console.error("Ошибка получения баланса:", error);
+          setBalance(0);
+        }
+      };
 
-  //   fetchBalance();
-  // }, [userFriendlyAddress]);
-
-  console.log(userFriendlyAddress);
+      fetchBalance();
+    }
+  }, [userFriendlyAddress]);
 
   return (
     <>
