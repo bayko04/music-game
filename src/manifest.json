@@ -1,5 +1,5 @@
 {
-  "url": "http://localhost:3000",
+  "url": "https://music-game-six.vercel.app",
   "name": "Melodix",
-  "iconUrl": "http://localhost:3000/icon.png"
+  "iconUrl": "http://localhost:3000/favicon.ico"
 }
