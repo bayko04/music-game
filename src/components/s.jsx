@@ -12,6 +12,7 @@ import {
 const MusicTilesGame = ({ songName }) => {
   const gameRef = useRef(null);
   const [score, setScore] = useState(0);
+  // const [isGameStarted, setIsGameStarted] = useState(false);
   const [isGameFinished, setIsGameFinished] = useState(false);
   const { isGameStarted, name, music } = useSelector((state) => state.game);
   const dispatch = useDispatch();
@@ -45,13 +46,14 @@ const MusicTilesGame = ({ songName }) => {
   useEffect(() => {
     if (!isGameStarted) return;
 
+    const synth = new Tone.Synth().toDestination();
     let tiles;
     let hitZones;
     let tileSpeed = 17;
     let activeTiles = 0;
+    let lastTileWasLong = false;
     let lastUsedLine = null;
-    let isMusicPlaying = true;
-    let silenceDuration = 0;
+    const maxTiles = 4;
 
     const backgroundMusic = new Tone.Player({
       url: music,
@@ -72,19 +74,9 @@ const MusicTilesGame = ({ songName }) => {
       Tone.Transport.start();
       backgroundMusic.start();
 
-      backgroundMusic.onstop = () => {
-        isMusicPlaying = false;
-        silenceDuration = Date.now(); // Засекаем начало паузы
-      };
-
-      backgroundMusic.onstart = () => {
-        isMusicPlaying = true;
-        const endOfSilence = Date.now();
-        const silenceTimeElapsed = endOfSilence - silenceDuration;
-        silenceDuration = silenceTimeElapsed; // Сохраняем время паузы
-      };
-
       setTimeout(() => {
+        backgroundMusic.stop();
+        Tone.Transport.stop();
         stopGame();
       }, 60000);
     });
@@ -166,82 +158,71 @@ const MusicTilesGame = ({ songName }) => {
     }
 
     function spawnTileFromMelody(bpm) {
-      if (activeTiles >= 4) return;
+      let isLongTile = false;
 
-      // Переменная для определения, высокий ли ритм (порог можно регулировать)
-      const isFastBeat = bpm >= 180; // Измените значение bpm в зависимости от того, что для вас считается высоким ритмом
-
-      // Если музыка не играет и есть пауза, генерируем длинные плитки
-      if (!isMusicPlaying && silenceDuration > 0) {
-        const availableLines = tileLines.filter(
-          (_, index) => index !== lastUsedLine
-        );
-        const x1 = Phaser.Math.RND.pick(availableLines);
-        const x2 = Phaser.Math.RND.pick(
-          availableLines.filter((line) => line !== x1)
-        );
-
-        // Создание длинной плитки во время паузы
-        const createTile = (x) => {
-          const tile = tiles.create(x, -tileHeight / 2, "tile");
-
-          // Рассчитываем пропорцию длины плитки в зависимости от продолжительности тишины
-          const silenceProportion = Math.min(silenceDuration / 5000, 1);
-          const longTileHeight = tileHeight * (1 + silenceProportion * 2);
-
-          tile.setDisplaySize(tileWidth, longTileHeight);
-          tile.setInteractive();
-
-          tile.on("pointerdown", () => {
-            setScore((prevScore) => prevScore + 50);
-            tile.destroy();
-            activeTiles--;
-          });
-
-          tile.setDepth(1);
-          activeTiles++;
-        };
-
-        createTile(x1);
-        createTile(x2);
-
-        lastUsedLine = tileLines.indexOf(x2);
-        silenceDuration = 0; // Сбрасываем паузу
-      } else {
-        // Обычные плитки при проигрывании музыки
-        const availableLines = tileLines.filter(
-          (_, index) => index !== lastUsedLine
-        );
-        const x1 = Phaser.Math.RND.pick(availableLines);
-
-        const createTile = (x) => {
-          const tile = tiles.create(x, -tileHeight / 2, "tile");
-
-          tile.setDisplaySize(tileWidth, tileHeight);
-          tile.setInteractive();
-
-          tile.on("pointerdown", () => {
-            setScore((prevScore) => prevScore + 10);
-            tile.destroy();
-            activeTiles--;
-          });
-
-          tile.setDepth(1);
-          activeTiles++;
-        };
-
-        createTile(x1);
-
-        // Если такт быстрый, создаем дополнительную плитку
-        if (isFastBeat) {
-          const x2 = Phaser.Math.RND.pick(
-            availableLines.filter((line) => line !== x1)
-          );
-          createTile(x2);
-        }
-
-        lastUsedLine = tileLines.indexOf(x1);
+      if (!lastTileWasLong) {
+        const longTileProbability = bpm > 160 ? 0.2 : 0.5;
+        isLongTile = Math.random() < longTileProbability;
       }
+
+      let availableLines = tileLines.filter(
+        (_, index) => index !== lastUsedLine
+      );
+      const x = Phaser.Math.RND.pick(availableLines);
+      const newLineIndex = tileLines.indexOf(x);
+
+      const tile = tiles.create(x, -tileHeight / 2, "tile");
+      tile.setInteractive();
+      tile.isLongTile = isLongTile;
+
+      if (isLongTile) {
+        // tile.setTint(0xff0000);
+        tile.holdTime = 0;
+        tile.requiredHoldTime = bpm * 10;
+        tile.isBeingHeld = false;
+
+        const randomHeights = [400, 600, 1200];
+        const randomHeight = Phaser.Math.RND.pick(randomHeights);
+        tile.setDisplaySize(tileWidth, randomHeight);
+
+        tile.on("pointerdown", () => {
+          tile.isBeingHeld = true;
+          tile.setTint(0x00ff00);
+        });
+
+        tile.on("pointerup", () => {
+          tile.isBeingHeld = false;
+          const holdPercentage = Math.min(
+            tile.holdTime / tile.requiredHoldTime,
+            1
+          );
+          const points = Math.floor(holdPercentage * 100);
+          setScore((prevScore) => prevScore + points);
+          tile.destroy();
+          activeTiles--;
+        });
+
+        tile.on("pointerout", () => {
+          tile.isBeingHeld = false;
+          tile.setTint(0xff0000);
+        });
+
+        lastTileWasLong = true;
+      } else {
+        tile.on("pointerdown", () => {
+          setScore((prevScore) => prevScore + 10);
+          tile.destroy();
+          activeTiles--;
+        });
+
+        tile.setDisplaySize(tileWidth, tileHeight);
+        lastTileWasLong = false;
+      }
+
+      tile.setDepth(1);
+      activeTiles++;
+
+      lastUsedLine = newLineIndex;
     }
 
     function update(time, delta) {
@@ -249,7 +230,16 @@ const MusicTilesGame = ({ songName }) => {
         if (tile) {
           tile.y += tileSpeed;
 
-          if (tile.y >= height) {
+          if (tile.isLongTile && tile.isBeingHeld) {
+            tile.holdTime += delta;
+          }
+
+          if (!tile.isBeingHeld && tile.isLongTile && tile.y >= height) {
+            tile.destroy();
+            activeTiles--;
+          }
+
+          if (!tile.isLongTile && tile.y >= height) {
             setScore((prevScore) => Math.max(prevScore - 5, 0));
             tile.destroy();
             activeTiles--;
@@ -274,13 +264,15 @@ const MusicTilesGame = ({ songName }) => {
     dispatch(setIsGameStarted(true));
     setIsGameFinished(false);
   };
+
   return (
     <div className="game-parent">
       {isGameStarted && (
         <div className="score-display">
-          {score} <br /> <span>POINTS</span>
+          {score} <br /> <span>POINTS</span>{" "}
         </div>
       )}
+      {/* Очки вверху */}
       {!isGameStarted && !isGameFinished && (
         <div className="start-button">
           <button onClick={handleStartGame}>{songName}</button>
@@ -298,9 +290,10 @@ const MusicTilesGame = ({ songName }) => {
       <div id="phaser-container" ref={gameRef} />
       {isGameStarted && (
         <div className="song-title">
-          Current Song: <br /> <span>{name}</span>
+          Current Song: <br /> <span>{songName}</span>
         </div>
       )}
+      {/* Название песни внизу */}
     </div>
   );
 };
