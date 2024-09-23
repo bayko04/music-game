@@ -53,11 +53,17 @@ const MusicTilesGame = ({ songName }) => {
     let isMusicPlaying = true;
     let silenceDuration = 0;
 
+    const meter = new Tone.Meter();
+    const threshold = -12; // Порог громкости для выпуска двойных плиток
+
     const backgroundMusic = new Tone.Player({
       url: music,
       loop: false,
       autostart: false,
     }).toDestination();
+
+    // Подключаем плеер к анализатору громкости
+    backgroundMusic.connect(meter);
 
     const stopGame = () => {
       setIsGameFinished(true);
@@ -168,80 +174,42 @@ const MusicTilesGame = ({ songName }) => {
     function spawnTileFromMelody(bpm) {
       if (activeTiles >= 4) return;
 
-      // Переменная для определения, высокий ли ритм (порог можно регулировать)
-      const isFastBeat = bpm >= 180; // Измените значение bpm в зависимости от того, что для вас считается высоким ритмом
+      const level = meter.getValue(); // Получаем уровень громкости
 
-      // Если музыка не играет и есть пауза, генерируем длинные плитки
-      if (!isMusicPlaying && silenceDuration > 0) {
-        const availableLines = tileLines.filter(
-          (_, index) => index !== lastUsedLine
-        );
-        const x1 = Phaser.Math.RND.pick(availableLines);
+      const isFastBeat = bpm >= 180;
+
+      const availableLines = tileLines.filter(
+        (_, index) => index !== lastUsedLine
+      );
+      const x1 = Phaser.Math.RND.pick(availableLines);
+
+      const createTile = (x) => {
+        const tile = tiles.create(x, -tileHeight / 2, "tile");
+
+        tile.setDisplaySize(tileWidth, tileHeight);
+        tile.setInteractive();
+
+        tile.on("pointerdown", () => {
+          setScore((prevScore) => prevScore + 10);
+          tile.destroy();
+          activeTiles--;
+        });
+
+        tile.setDepth(1);
+        activeTiles++;
+      };
+
+      createTile(x1);
+
+      // Если громкость превышает порог или ритм быстрый, создаем дополнительную плитку
+      if (level > threshold || isFastBeat) {
         const x2 = Phaser.Math.RND.pick(
           availableLines.filter((line) => line !== x1)
         );
-
-        // Создание длинной плитки во время паузы
-        const createTile = (x) => {
-          const tile = tiles.create(x, -tileHeight / 2, "tile");
-
-          // Рассчитываем пропорцию длины плитки в зависимости от продолжительности тишины
-          const silenceProportion = Math.min(silenceDuration / 5000, 1);
-          const longTileHeight = tileHeight * (1 + silenceProportion * 2);
-
-          tile.setDisplaySize(tileWidth, longTileHeight);
-          tile.setInteractive();
-
-          tile.on("pointerdown", () => {
-            setScore((prevScore) => prevScore + 50);
-            tile.destroy();
-            activeTiles--;
-          });
-
-          tile.setDepth(1);
-          activeTiles++;
-        };
-
-        createTile(x1);
         createTile(x2);
-
-        lastUsedLine = tileLines.indexOf(x2);
-        silenceDuration = 0; // Сбрасываем паузу
-      } else {
-        // Обычные плитки при проигрывании музыки
-        const availableLines = tileLines.filter(
-          (_, index) => index !== lastUsedLine
-        );
-        const x1 = Phaser.Math.RND.pick(availableLines);
-
-        const createTile = (x) => {
-          const tile = tiles.create(x, -tileHeight / 2, "tile");
-
-          tile.setDisplaySize(tileWidth, tileHeight);
-          tile.setInteractive();
-
-          tile.on("pointerdown", () => {
-            setScore((prevScore) => prevScore + 10);
-            tile.destroy();
-            activeTiles--;
-          });
-
-          tile.setDepth(1);
-          activeTiles++;
-        };
-
-        createTile(x1);
-
-        // Если такт быстрый, создаем дополнительную плитку
-        if (isFastBeat) {
-          const x2 = Phaser.Math.RND.pick(
-            availableLines.filter((line) => line !== x1)
-          );
-          createTile(x2);
-        }
-
-        lastUsedLine = tileLines.indexOf(x1);
       }
+
+      lastUsedLine = tileLines.indexOf(x1);
     }
 
     function update(time, delta) {
@@ -274,6 +242,7 @@ const MusicTilesGame = ({ songName }) => {
     dispatch(setIsGameStarted(true));
     setIsGameFinished(false);
   };
+
   return (
     <div className="game-parent">
       {isGameStarted && (
