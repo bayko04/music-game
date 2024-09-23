@@ -1,15 +1,21 @@
 import React, { useEffect, useRef, useState } from "react";
 import Phaser from "phaser";
 import * as Tone from "tone";
-import musicMp from "../musics/1.mp3"; // Основная мелодия
-import tileSoundMp from "../musics/2.mp3"; // Звуки при нажатии
 import car1 from "../images/1.png"; // Изображение плитки
+import { useDispatch, useSelector } from "react-redux";
+import {
+  setIsGameStarted,
+  setMusic,
+  setName,
+} from "../store/reducers/GameSlice";
 
-const MusicTilesGame = () => {
+const MusicTilesGame = ({ songName }) => {
   const gameRef = useRef(null);
   const [score, setScore] = useState(0);
-  const [isGameStarted, setIsGameStarted] = useState(false);
+  // const [isGameStarted, setIsGameStarted] = useState(false);
   const [isGameFinished, setIsGameFinished] = useState(false);
+  const { isGameStarted, name, music } = useSelector((state) => state.game);
+  const dispatch = useDispatch();
 
   const getGameConfig = (screenWidth, screenHeight) => {
     let tileWidth, tileHeight, tileLines;
@@ -43,14 +49,14 @@ const MusicTilesGame = () => {
     const synth = new Tone.Synth().toDestination();
     let tiles;
     let hitZones;
-    let tileSpeed = 12;
+    let tileSpeed = 17;
     let activeTiles = 0;
     let lastTileWasLong = false;
     let lastUsedLine = null;
     const maxTiles = 4;
 
     const backgroundMusic = new Tone.Player({
-      url: tileSoundMp,
+      url: music,
       loop: false,
       autostart: false,
     }).toDestination();
@@ -254,7 +260,8 @@ const MusicTilesGame = () => {
   }, [isGameStarted]);
 
   const handleStartGame = () => {
-    setIsGameStarted(true);
+    dispatch(setName(songName));
+    dispatch(setIsGameStarted(true));
     setIsGameFinished(false);
   };
 
@@ -268,20 +275,22 @@ const MusicTilesGame = () => {
       {/* Очки вверху */}
       {!isGameStarted && !isGameFinished && (
         <div className="start-button">
-          <button onClick={handleStartGame}>Start Game</button>
+          <button onClick={handleStartGame}>{songName}</button>
         </div>
       )}
       {isGameFinished && (
         <div className="game-finished">
           <h2>Game Over</h2>
           <p>Score: {score}</p>
-          <button onClick={() => setIsGameStarted(false)}>Restart</button>
+          <button onClick={() => dispatch(setIsGameStarted(false))}>
+            Restart
+          </button>
         </div>
       )}
       <div id="phaser-container" ref={gameRef} />
       {isGameStarted && (
         <div className="song-title">
-          Current Song: <br /> <span>Your Song Name</span>
+          Current Song: <br /> <span>{name}</span>
         </div>
       )}
       {/* Название песни внизу */}

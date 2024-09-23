@@ -50,11 +50,52 @@ body {
   color: white;
   z-index: 10;
 }
+
+.buttons-parent {
+  display: flex;
+  flex-direction: column;
+  /* position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%); */
+  gap: 30px;
+}
+
+ul,
+li {
+  text-decoration: none;
+  list-style: none;
+}
+
+.buttons-parent ul {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+.buttons-parent li {
+  cursor: pointer;
+  padding: 10px;
+  background: transparent;
+  border: 1px solid #fff;
+  font-size: 20px;
+  outline: none;
+  color: #fff;
+  border-radius: 10px;
+  transition: all 0.3s ease;
+}
+
+.buttons-parent li:hover {
+  background: #fff;
+  color: #000;
+}
+
 .start-button {
-  position: absolute;
+  /* position: absolute;
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%); */
+  text-align: center;
+  visibility: hidden;
 }
 
 .start-button button {
