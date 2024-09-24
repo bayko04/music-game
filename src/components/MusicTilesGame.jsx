@@ -175,13 +175,13 @@ const MusicTilesGame = ({ songName }) => {
       if (activeTiles >= 4) return;
 
       const level = meter.getValue(); // Получаем уровень громкости
-
       const isFastBeat = bpm >= 180;
 
+      // Фильтруем доступные линии, чтобы исключить последнюю использованную линию
       const availableLines = tileLines.filter(
         (_, index) => index !== lastUsedLine
       );
-      const x1 = Phaser.Math.RND.pick(availableLines);
+      const x1 = Phaser.Math.RND.pick(availableLines); // Выбираем первую линию
 
       const createTile = (x) => {
         const tile = tiles.create(x, -tileHeight / 2, "tile");
@@ -189,6 +189,7 @@ const MusicTilesGame = ({ songName }) => {
         tile.setDisplaySize(tileWidth, tileHeight);
         tile.setInteractive();
 
+        // Обработчик клика для каждой плитки
         tile.on("pointerdown", () => {
           setScore((prevScore) => prevScore + 10);
           tile.destroy();
@@ -199,17 +200,20 @@ const MusicTilesGame = ({ songName }) => {
         activeTiles++;
       };
 
+      // Создаем первую плитку
       createTile(x1);
 
-      // Если громкость превышает порог или ритм быстрый, создаем дополнительную плитку
+      // Если уровень громкости выше порога или ритм быстрый, создаем дополнительную плитку
       if (level > threshold || isFastBeat) {
-        const x2 = Phaser.Math.RND.pick(
-          availableLines.filter((line) => line !== x1)
+        const availableLinesForSecondTile = availableLines.filter(
+          (line) => line !== x1
         );
-        createTile(x2);
+        const x2 = Phaser.Math.RND.pick(availableLinesForSecondTile); // Выбираем вторую линию
+
+        createTile(x2); // Создаем вторую плитку
       }
 
-      lastUsedLine = tileLines.indexOf(x1);
+      lastUsedLine = tileLines.indexOf(x1); // Запоминаем последнюю использованную линию
     }
 
     function update(time, delta) {
