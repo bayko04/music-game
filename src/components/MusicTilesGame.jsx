@@ -171,53 +171,103 @@ const MusicTilesGame = ({ songName }) => {
       });
     }
 
-    function spawnTileFromMelody(bpm) {
+    function spawnTileFromMelody(scene, bpm) {
       if (activeTiles >= 4) return;
 
-      const level = meter.getValue(); // Получаем уровень громкости
+      const level = meter.getValue();
       const isFastBeat = bpm >= 180;
 
-      // Фильтруем доступные линии, чтобы исключить последнюю использованную линию
       const availableLines = tileLines.filter(
         (_, index) => index !== lastUsedLine
       );
-      const x1 = Phaser.Math.RND.pick(availableLines); // Выбираем первую линию
 
-      const createTile = (x) => {
-        return new Promise((resolve) => {
+      const createDoubleTiles = () => {
+        const x1 = Phaser.Math.RND.pick(availableLines);
+
+        const createTile = (x) => {
           const tile = tiles.create(x, -tileHeight / 2, "tile");
+
           tile.setDisplaySize(tileWidth, tileHeight);
           tile.setInteractive();
 
-          // Обработчик клика для каждой плитки
-          tile.on("pointerdown", () => {
-            setScore((prevScore) => prevScore + 10);
-            tile.destroy();
-            activeTiles--;
+          tile.on("pointerdown", (pointer) => {
+            if (pointer.isDown) {
+              setScore((prevScore) => prevScore + 10);
+              tile.destroy();
+              activeTiles--;
+            }
           });
 
           tile.setDepth(1);
           activeTiles++;
+        };
 
-          resolve(tile); // Резолвим промис после создания плитки
-        });
-      };
+        createTile(x1);
 
-      // Создаем первую плитку
-      createTile(x1).then(() => {
-        // Если уровень громкости выше порога или ритм быстрый, создаем дополнительную плитку
         if (level > threshold || isFastBeat) {
           const availableLinesForSecondTile = availableLines.filter(
             (line) => line !== x1
           );
-          const x2 = Phaser.Math.RND.pick(availableLinesForSecondTile); // Выбираем вторую линию
-
-          // Создаем вторую плитку
+          const x2 = Phaser.Math.RND.pick(availableLinesForSecondTile);
           createTile(x2);
         }
+
+        lastUsedLine = tileLines.indexOf(x1);
+      };
+
+      // Используем 'scene.time' для работы с таймером
+      scene.time.addEvent({
+        delay: 0,
+        callback: createDoubleTiles,
+        callbackScope: scene,
+      });
+    }
+
+    function create() {
+      this.input.addPointer(1);
+      this.cameras.main.setBackgroundColor("#212121");
+
+      const lines = this.add.graphics();
+      lines.lineStyle(2, 0x4b4848);
+
+      const midLines = [
+        (tileLines[0] + tileLines[1]) / 2,
+        (tileLines[1] + tileLines[2]) / 2,
+      ];
+
+      midLines.forEach((linePos) => {
+        lines.moveTo(linePos, 0);
+        lines.lineTo(linePos, height);
+      });
+      lines.strokePath();
+
+      tiles = this.physics.add.group();
+
+      hitZones = this.add.group();
+      tileLines.forEach((xPos) => {
+        const zoneGraphics = this.add.graphics();
+        zoneGraphics.fillStyle(0xffffff, 0.1);
+
+        zoneGraphics.fillRoundedRect(
+          xPos - tileWidth / 2,
+          height - tileHeight - 50,
+          tileWidth,
+          tileHeight - 50,
+          12
+        );
+
+        hitZones.add(zoneGraphics);
       });
 
-      lastUsedLine = tileLines.indexOf(x1); // Запоминаем последнюю использованную линию
+      const bpm = 120;
+      const beatInterval = (60 / bpm) * 1000;
+
+      this.time.addEvent({
+        delay: beatInterval,
+        callback: () => spawnTileFromMelody(this, bpm), // Передаем текущую сцену в функцию
+        callbackScope: this,
+        loop: true,
+      });
     }
 
     function update(time, delta) {
