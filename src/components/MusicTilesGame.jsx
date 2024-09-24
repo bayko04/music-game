@@ -184,34 +184,38 @@ const MusicTilesGame = ({ songName }) => {
       const x1 = Phaser.Math.RND.pick(availableLines); // Выбираем первую линию
 
       const createTile = (x) => {
-        const tile = tiles.create(x, -tileHeight / 2, "tile");
+        return new Promise((resolve) => {
+          const tile = tiles.create(x, -tileHeight / 2, "tile");
+          tile.setDisplaySize(tileWidth, tileHeight);
+          tile.setInteractive();
 
-        tile.setDisplaySize(tileWidth, tileHeight);
-        tile.setInteractive();
+          // Обработчик клика для каждой плитки
+          tile.on("pointerdown", () => {
+            setScore((prevScore) => prevScore + 10);
+            tile.destroy();
+            activeTiles--;
+          });
 
-        // Обработчик клика для каждой плитки
-        tile.on("pointerdown", () => {
-          setScore((prevScore) => prevScore + 10);
-          tile.destroy();
-          activeTiles--;
+          tile.setDepth(1);
+          activeTiles++;
+
+          resolve(tile); // Резолвим промис после создания плитки
         });
-
-        tile.setDepth(1);
-        activeTiles++;
       };
 
       // Создаем первую плитку
-      createTile(x1);
+      createTile(x1).then(() => {
+        // Если уровень громкости выше порога или ритм быстрый, создаем дополнительную плитку
+        if (level > threshold || isFastBeat) {
+          const availableLinesForSecondTile = availableLines.filter(
+            (line) => line !== x1
+          );
+          const x2 = Phaser.Math.RND.pick(availableLinesForSecondTile); // Выбираем вторую линию
 
-      // Если уровень громкости выше порога или ритм быстрый, создаем дополнительную плитку
-      if (level > threshold || isFastBeat) {
-        const availableLinesForSecondTile = availableLines.filter(
-          (line) => line !== x1
-        );
-        const x2 = Phaser.Math.RND.pick(availableLinesForSecondTile); // Выбираем вторую линию
-
-        createTile(x2); // Создаем вторую плитку
-      }
+          // Создаем вторую плитку
+          createTile(x2);
+        }
+      });
 
       lastUsedLine = tileLines.indexOf(x1); // Запоминаем последнюю использованную линию
     }
